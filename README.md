@@ -46,6 +46,8 @@ pdf-chatbot/
 Backend (PowerShell):
 
 ```powershell
+Copy-Item .env.example .env
+# Edit .env if your local PostgreSQL values differ.
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -62,3 +64,12 @@ npm run dev
 ```
 
 Open `http://localhost:5174`. The API health endpoint is `http://127.0.0.1:8001/api/health`.
+
+## Current document API
+
+- `POST /api/documents` accepts one PDF in the multipart field named `file`.
+- `GET /api/documents` lists every uploaded document.
+- Files are stored under the ignored `backend/data/uploads/` directory.
+- Document metadata is stored in PostgreSQL. The database and `documents` table are created manually for now.
+
+Use `http://127.0.0.1:8001/docs` to upload and inspect documents without a frontend form.

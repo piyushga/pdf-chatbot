@@ -2,12 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import router
-from app.core.config import get_settings
-
-settings = get_settings()
+from app.core.config import settings
 
 app = FastAPI(
-    title=settings.app_name,
+    title="AI PDF Chatbot API",
     version="0.1.0",
 )
 
@@ -20,4 +18,3 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
-

@@ -2,6 +2,7 @@
 .env
 !.env.example
 backend/.venv/
+backend/data/
 
 # Python
 __pycache__/
