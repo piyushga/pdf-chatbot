@@ -1,23 +1,37 @@
 from collections.abc import Generator
+from urllib.parse import quote_plus
 
-import psycopg
-from psycopg import Connection
-from psycopg.rows import dict_row
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
+DATABASE_URL = (
+    "postgresql+psycopg://"
+    f"{quote_plus(settings.POSTGRES_USER)}:"
+    f"{quote_plus(settings.POSTGRES_PASSWORD)}@"
+    f"{settings.POSTGRES_HOST}:"
+    f"{settings.POSTGRES_PORT}/"
+    f"{settings.POSTGRES_DB}"
+)
 
-def open_database() -> Connection:
-    return psycopg.connect(
-        host=settings.postgres_host,
-        port=settings.postgres_port,
-        dbname=settings.postgres_db,
-        user=settings.postgres_user,
-        password=settings.postgres_password,
-        row_factory=dict_row,
-    )
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+)
 
 
-def get_database() -> Generator[Connection, None, None]:
-    with open_database() as connection:
-        yield connection
+class Base(DeclarativeBase):
+    pass
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+

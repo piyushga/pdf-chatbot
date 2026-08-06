@@ -2,10 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class DocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     document_id: uuid.UUID
     file_name: str
     file_hash: str
@@ -17,4 +19,3 @@ class DocumentResponse(BaseModel):
 class DocumentListResponse(BaseModel):
     documents: list[DocumentResponse]
     total: int
-

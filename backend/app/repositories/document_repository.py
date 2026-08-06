@@ -1,41 +1,34 @@
 import uuid
-from typing import Any
 
-from psycopg import Connection
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models.document import Document
 
 
 def insert_document(
-    database: Connection,
+    db: Session,
     *,
     document_id: uuid.UUID,
     file_name: str,
     file_hash: str,
     file_size: int,
     storage_path: str,
-) -> dict[str, Any]:
-    row = database.execute(
-        """
-        INSERT INTO documents (
-            document_id, file_name, file_hash, file_size, storage_path, status
-        )
-        VALUES (%s, %s, %s, %s, %s, 'uploaded')
-        RETURNING document_id, file_name, file_hash, file_size, status, uploaded_at
-        """,
-        (document_id, file_name, file_hash, file_size, storage_path),
-    ).fetchone()
-    database.commit()
-    if row is None:
-        raise RuntimeError("PostgreSQL did not return the inserted document.")
-    return row
+) -> Document:
+    document = Document(
+        document_id=document_id,
+        file_name=file_name,
+        file_hash=file_hash,
+        file_size=file_size,
+        storage_path=storage_path,
+        status="uploaded",
+    )
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+    return document
 
 
-def list_documents(database: Connection) -> list[dict[str, Any]]:
-    rows = database.execute(
-        """
-        SELECT document_id, file_name, file_hash, file_size, status, uploaded_at
-        FROM documents
-        ORDER BY uploaded_at DESC
-        """
-    ).fetchall()
-    return list(rows)
-
+def list_documents(db: Session) -> list[Document]:
+    statement = select(Document).order_by(Document.uploaded_at.desc())
+    return list(db.scalars(statement).all())
