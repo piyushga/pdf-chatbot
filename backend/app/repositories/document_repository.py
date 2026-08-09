@@ -6,6 +6,11 @@ from sqlalchemy.orm import Session
 from app.models.document import Document
 
 
+def find_document_by_hash(db: Session, file_hash: str) -> Document | None:
+    statement = select(Document).where(Document.file_hash == file_hash).limit(1)
+    return db.scalars(statement).first()
+
+
 def insert_document(
     db: Session,
     *,

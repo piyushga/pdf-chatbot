@@ -29,6 +29,16 @@ async def upload_document(
         raise HTTPException(status_code=413, detail=str(exc)) from exc
 
     try:
+        existing_document = document_repository.find_document_by_hash(
+            db,
+            saved_pdf["file_hash"],
+        )
+        if existing_document:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{existing_document.file_name} has already been uploaded.",
+            )
+
         document = document_repository.insert_document(db, **saved_pdf)
     except Exception:
         delete_saved_pdf(saved_pdf["storage_path"])
